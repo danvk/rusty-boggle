@@ -1,0 +1,6 @@
+agriculture
+culture
+boggle
+tea
+sea
+teapot

@@ -1,4 +1,9 @@
-mod trie {
+pub mod trie {
+    // Do these go inside the mod or outside?
+    use std::fs::File;
+    use std::io::{self, BufRead};
+    use std::path::Path;
+
     pub const NUM_LETTERS: usize = 26;
     pub const Q: i8 = ('q' as i8) - ('a' as i8);
 
@@ -14,6 +19,13 @@ mod trie {
         pub mark: u32,
         // XXX would this be simpler as Box<[Option<Trie>; NUM_LETTERS]?
         children: [Option<Box<Trie>>; NUM_LETTERS],
+    }
+
+    // Helper from https://doc.rust-lang.org/stable/rust-by-example/std_misc/file/read_lines.html
+    fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+    where P: AsRef<Path>, {
+        let file = File::open(filename)?;
+        Ok(io::BufReader::new(file).lines())
     }
 
     impl Trie {
@@ -95,8 +107,22 @@ mod trie {
             self.find_word_chars(word.chars())
         }
 
-        fn from_file(filename: &str) -> Trie {
-            panic!("Not implemented")
+        pub fn from_file(filename: &str) -> Option<Trie> {
+            let mut t = Trie::new();
+            if let Ok(lines) = read_lines(filename) {
+                // Consumes the iterator, returns an (Optional) String
+                for line in lines {
+                    if let Ok(word_line) = line {
+                        let word = word_line.trim();
+                        if !word.is_empty() {
+                            t.add_word_chars(word.chars());
+                        }
+                    }
+                }
+                Some(t)
+            } else {
+                None
+            }
         }
 
         pub fn size(&self) -> u32 {
