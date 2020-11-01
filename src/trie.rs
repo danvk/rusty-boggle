@@ -39,14 +39,13 @@ mod trie {
         pub fn add_word_chars(&mut self, mut chars: std::str::Chars) {
             if let Some(letter) = chars.next() {
                 let i = idx(letter) as usize;
-                if let Some(c) = self.children.get_mut(i) {
-                    if let Some(child) = c {
-                        child.add_word_chars(chars);
-                    } else {
-                        let mut new_child = Trie::new();
-                        new_child.add_word_chars(chars);
-                        self.children[i] = Some(Box::from(new_child));
-                    }
+
+                if let Some(child) = self.descend_mut(i) {
+                    child.add_word_chars(chars);
+                } else {
+                    let mut new_child = Trie::new();
+                    new_child.add_word_chars(chars);
+                    self.children[i] = Some(Box::from(new_child));
                 }
             } else {
                 self.is_word = true;
@@ -66,6 +65,16 @@ mod trie {
                 None => panic!("Invalid letter: {i}"),
                 // This looks like the identity, but there's some implicit unboxing.
                 // XXX is there a better way to do this?
+                Some(c) => match c {
+                    Some(d) => Some(d),
+                    None => None,
+                }
+            }
+        }
+
+        pub fn descend_mut(&mut self, i: usize) -> Option<&mut Trie> {
+            match self.children.get_mut(i) {
+                None => panic!("Invalid letter: {i}"),
                 Some(c) => match c {
                     Some(d) => Some(d),
                     None => None,
