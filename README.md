@@ -36,7 +36,9 @@ Is there any way to automatically call `destroy` methods when a structure is con
 Is there a pattern for de-duping code between a mut and non-mut method?
 
 It's going to pay off to get very, very comfortable with idiomatic `Option` usage.
-It's not really clear to me when I can use `flat_map`.
+- It's not really clear to me when I can use `flat_map`.
+- The trailing `?` operator is helpful.
+- Is there an equivalent of refinement? i.e. panic on Err
 
 It seems like sometimes `Box` gets implicitly unwrapped in ways that confuse me.
 For example, this looks like it should be the identity:
@@ -48,6 +50,14 @@ For example, this looks like it should be the identity:
 
 But `c` is `&Option<Box<Trie>>`, so it actually secretly unboxes the Trie.
 Is there a shorter way to write this?
+
+First cut:
+
+    $ time ./target/debug/rusty-boggle ../performance-boggle/words
+    Loaded 173528 words into 389309 nodes from ../performance-boggle/words
+    ./target/debug/rusty-boggle ../performance-boggle/words  1.79s user 0.04s system 99% cpu 1.843 total
+
+I'm a little worried about that performance while loading the Trie.
 
 ## General Notes
 
@@ -62,6 +72,14 @@ Is there a shorter way to write this?
 - Some of the files in the repo are 13 years old.
   I didn't think GitHub was that old; maybe this is an svn import?
 - The repo is well-organized; I particularly like the subdirectories with abandoned ideas and short explanations of why they didn't pan out.
+
+Interesting reading this comment with "Don't put type information in the documentation":
+
+    // Assumes ownership of the Trie. No other Boggler may modify the Trie after
+    // this Boggler has been constructed using it.
+    Boggler(TrieT* t);
+
+From a Rust perspective, that's type information!
 
 [1]: https://github.com/danvk/performance-boggle
 [2]: http://www.danvk.org/wp/category/boggle/

@@ -8,9 +8,8 @@ fn main() {
     }
 
     let path = args.get(1).unwrap();
-    if let Some(t) = trie::trie::Trie::from_file(path) {
-        println!("Loaded {} words into {} nodes from {}", t.size(), t.num_nodes(), path);
-    } else {
-        println!("Failed to load {}", path);
+    match trie::Trie::from_file(path) {
+        Ok(t) => println!("Loaded {} words into {} nodes from {}", t.size(), t.num_nodes(), path),
+        Err(e) => println!("Failed to load {}: {}", path, e),
     }
 }
