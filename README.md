@@ -21,6 +21,34 @@ What is Rust naming convention? `my_method` or `myMethod`? Is there a preference
 vscode stopped showing errors / autocomplete in a way that makes me uncomfortable.
 --> I got no error checking / language services until I imported from `main.rs`.
 
+Initializing this structure was surprisingly hard:
+
+    children: [Option<Box<Trie>>; NUM_LETTERS],
+
+I got a reference to a GitHub issue when I tried `[None; NUM_LETTERS]`!
+https://github.com/rust-lang/rust/issues/49147
+
+Unit tests live in the same file as their code, in a `tests` module.
+The "if it compiles it works" mantra seems to be holding up well so far.
+
+Is there any way to automatically call `destroy` methods when a structure is consumed?
+
+Is there a pattern for de-duping code between a mut and non-mut method?
+
+It's going to pay off to get very, very comfortable with idiomatic `Option` usage.
+It's not really clear to me when I can use `flat_map`.
+
+It seems like sometimes `Box` gets implicitly unwrapped in ways that confuse me.
+For example, this looks like it should be the identity:
+
+    Some(c) => match c {
+        Some(d) => Some(d),
+        None => None,
+    }
+
+But `c` is `&Option<Box<Trie>>`, so it actually secretly unboxes the Trie.
+Is there a shorter way to write this?
+
 ## General Notes
 
 - "Classic" C++ is really drowning in type annotations.

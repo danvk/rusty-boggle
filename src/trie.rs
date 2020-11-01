@@ -35,6 +35,7 @@ mod trie {
             self.children.get(i).map_or(false, |c| c.is_some())
         }
 
+        // XXX does the iterator here need to be mutable/consumed?
         pub fn add_word_chars(&mut self, mut chars: std::str::Chars) {
             if let Some(letter) = chars.next() {
                 let i = idx(letter) as usize;
@@ -54,6 +55,35 @@ mod trie {
 
         pub fn add_word(&mut self, word: &str) {
             self.add_word_chars(word.chars());
+        }
+
+        pub fn is_word(&self, word: &str) -> bool {
+            self.find_word(word).map_or(false, |c| c.is_word)
+        }
+
+        pub fn descend(&self, i: usize) -> Option<&Trie> {
+            match self.children.get(i) {
+                None => panic!("Invalid letter: {i}"),
+                // This looks like the identity, but there's some implicit unboxing.
+                // XXX is there a better way to do this?
+                Some(c) => match c {
+                    Some(d) => Some(d),
+                    None => None,
+                }
+            }
+        }
+
+        pub fn find_word_chars(&self, mut chars: std::str::Chars) -> Option<&Trie> {
+            if let Some(letter) = chars.next() {
+                let i = idx(letter) as usize;
+                self.descend(i).map_or(None, |c| c.find_word_chars(chars))
+            } else {
+                Some(self)
+            }
+        }
+
+        pub fn find_word(&self, word: &str) -> Option<&Trie> {
+            self.find_word_chars(word.chars())
         }
 
         fn from_file(filename: &str) -> Trie {
@@ -87,7 +117,7 @@ mod tests {
     use super::trie::*;
 
     #[test]
-    fn test_simple_trie() {
+    fn test_shallow_trie() {
         let mut t = Trie::new();
         t.add_word("a");
         t.add_word("b");
@@ -97,5 +127,27 @@ mod tests {
         assert!(!t.starts_word(idx('c')));
         assert_eq!(t.num_nodes(), 3);
         assert_eq!(t.size(), 2);
+    }
+
+    #[test]
+    fn test_add_words() {
+        let mut t = Trie::new();
+        t.add_word("agriculture");
+        t.add_word("culture");
+        t.add_word("boggle");
+        t.add_word("tea");
+        t.add_word("sea");
+        t.add_word("teapot");
+
+        assert_eq!(t.size(), 6);
+
+        assert!(t.is_word("agriculture"));
+        assert!(t.is_word("culture"));
+        assert!(t.is_word("boggle"));
+        assert!(t.is_word("tea"));
+        assert!(t.is_word("teapot"));
+        assert!(!t.is_word("teap"));
+        assert!(!t.is_word("random"));
+        assert!(!t.is_word("cultur"));
     }
 }
