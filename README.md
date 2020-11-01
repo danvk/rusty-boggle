@@ -19,6 +19,7 @@ Are `struct` members public? How does access control work?
 What is Rust naming convention? `my_method` or `myMethod`? Is there a preference?
 
 vscode stopped showing errors / autocomplete in a way that makes me uncomfortable.
+--> I got no error checking / language services until I imported from `main.rs`.
 
 ## General Notes
 
