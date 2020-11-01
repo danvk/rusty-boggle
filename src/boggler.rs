@@ -8,7 +8,7 @@ pub struct Boggler {
 }
 
 impl Boggler {
-    fn new(dict: trie::Trie) -> Boggler {
+    pub fn new(dict: trie::Trie) -> Boggler {
         Boggler {
             dict,
             bd: Default::default(),
@@ -29,18 +29,42 @@ impl Boggler {
     fn height(&self) -> usize {
         4
     }
+
+    pub fn parse_board(&mut self, board: &str) -> Result<(), String> {
+        let w = self.width();
+        let h = self.height();
+        if board.len() != w * h {
+            return Err(String::from("Incorrect board length"));
+        }
+
+        for (i, c) in board.char_indices() {
+            if c < 'a' || c > 'z' {
+                return Err(format!("Invalid character: {}", c));
+            }
+            self.set_cell(i % w, i / w, trie::idx(c));
+        }
+
+        Ok(())
+    }
+
+    pub fn score(&mut self) -> u32 {
+        let mut score = 0;
+        score
+    }
 }
 
 impl fmt::Display for Boggler {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut result = Ok(());
-        for y in 0..self.height() {
-            for x in 0..self.width() {
+        let w = self.width();
+        let h = self.height();
+        let mut result = String::with_capacity(w * h);
+        for y in 0..h {
+            for x in 0..w {
                 let letter = ('a' as usize) + self.get_cell(x, y);
-                result = write!(f, "{}", letter);
+                result.push(letter as u8 as char);
             }
         }
-        result
+        write!(f, "{}", result)
     }
 }
 
@@ -98,5 +122,15 @@ mod tests {
     fn test_bogglify_word() {
         assert_eq!(bogglify_word("food"), "food");
         assert_eq!(bogglify_word("quickly"), "qickly");
+    }
+
+    #[test]
+    fn test_parse_and_display() {
+        let mut b = Boggler::new(trie::Trie::new());
+        b.parse_board("abcdefghijklmnop").unwrap();
+        assert_eq!("abcdefghijklmnop", b.to_string());
+
+        assert!(b.parse_board("abcdefghijklmno").is_err());
+        assert!(b.parse_board("abcdefghijklmnopq").is_err());
     }
 }
