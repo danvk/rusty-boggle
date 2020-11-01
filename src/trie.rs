@@ -159,4 +159,23 @@ mod tests {
         assert!(!t.is_word("random"));
         assert!(!t.is_word("cultur"));
     }
+
+    #[test]
+    fn test_marks() {
+        let mut t = Trie::new();
+        t.add_word("agriculture");
+        t.add_word("culture");
+        t.add_word("boggle");
+        t.add_word("tea");
+        t.add_word("sea");
+        t.add_word("teapot");
+
+        let mut wd = t.descend_mut(idx('t')).unwrap();
+        wd = wd.descend_mut(idx('e')).unwrap();
+        wd = wd.descend_mut(idx('a')).unwrap();
+        assert_eq!(0, wd.mark);
+        wd.mark = 12345;
+
+        assert_eq!(t.find_word("tea").unwrap().mark, 12345);
+    }
 }
