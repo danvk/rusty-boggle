@@ -59,6 +59,9 @@ First cut:
 
 I'm a little worried about that performance while loading the Trie.
 
+Wow, writing functions from str -> str is complicated!
+https://stackoverflow.com/questions/29781331/why-cant-i-return-an-str-value-generated-from-a-string
+
 ## General Notes
 
 - "Classic" C++ is really drowning in type annotations.

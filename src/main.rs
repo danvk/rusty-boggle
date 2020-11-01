@@ -1,4 +1,5 @@
 mod trie;
+mod boggler;
 use std::env;
 
 fn main() {
