@@ -1,14 +1,12 @@
-use std::str::Chars;
-
 mod trie {
     pub const NUM_LETTERS: usize = 26;
     pub const Q: i8 = ('q' as i8) - ('a' as i8);
 
-    fn idx(letter: char) -> i8 {
+    pub fn idx(letter: char) -> usize {
         if letter < 'a' || letter > 'z' {
             panic!("Invalid letter {letter}")
         }
-        return (letter as i8) - ('a' as i8);
+        return (letter as usize) - ('a' as usize);
     }
 
     pub struct Trie {
@@ -23,7 +21,7 @@ mod trie {
             Trie {
                 is_word: false,
                 mark: 0,
-                children: Default::default(),
+                children: Default::default(),  // What's going on here?
             }
         }
 
@@ -80,5 +78,24 @@ mod trie {
                 .map(|n| n.num_nodes())
                 .sum::<u32>()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // Note this useful idiom: importing names from outer (for mod tests) scope.
+    use super::trie::*;
+
+    #[test]
+    fn test_simple_trie() {
+        let mut t = Trie::new();
+        t.add_word("a");
+        t.add_word("b");
+
+        assert!(t.starts_word(idx('a')));
+        assert!(t.starts_word(idx('b')));
+        assert!(!t.starts_word(idx('c')));
+        assert_eq!(t.num_nodes(), 3);
+        assert_eq!(t.size(), 2);
     }
 }
