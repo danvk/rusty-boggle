@@ -1,19 +1,68 @@
-#[path = "./trie.rs"]
-mod trie;
+use crate::util;
+use crate::trie;
+use std::io;
 use std::fmt;
 
+const WORD_SCORES: [u32; 18] = [ 0, 0, 0, 1, 1, 2, 3, 5, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11 ];
+pub const Q: usize = (('q' as i8) - ('a' as i8)) as usize;
+
 pub struct Boggler {
-    dict: trie::Trie,
     bd: [[usize; 4]; 4],
+    runs: u32,
+}
+
+const NEIGHBORS_00: [(usize, usize); 3] = [(0, 1), (1, 0), (1, 1)];
+const NEIGHBORS_01: [(usize, usize); 5] = [(0, 0), (1, 0), (1, 1), (2, 1), (0, 2)];
+const NEIGHBORS_02: [(usize, usize); 5] = [(0, 1), (1, 1), (1, 2), (2, 2), (0, 3)];
+const NEIGHBORS_03: [(usize, usize); 3] = [(0, 2), (1, 2), (1, 3)];
+
+const NEIGHBORS_10: [(usize, usize); 5] = [(0, 0), (2, 0), (0, 1), (1, 1), (2, 1)];
+const NEIGHBORS_11: [(usize, usize); 8] = [(0, 0), (1, 0), (2, 0), (0, 1), (2, 1), (0, 2), (1, 2), (2, 2)];
+const NEIGHBORS_12: [(usize, usize); 8] = [(0, 1), (1, 1), (2, 1), (0, 2), (2, 2), (0, 3), (1, 3), (2, 3)];
+const NEIGHBORS_13: [(usize, usize); 5] = [(0, 2), (1, 2), (2, 2), (0, 3), (2, 3)];
+
+const NEIGHBORS_20: [(usize, usize); 5] = [(1, 0), (3, 0), (1, 1), (2, 1), (3, 1)];
+const NEIGHBORS_21: [(usize, usize); 8] = [(1, 0), (2, 0), (3, 0), (1, 1), (3, 1), (1, 2), (2, 2), (3, 2)];
+const NEIGHBORS_22: [(usize, usize); 8] = [(1, 1), (2, 1), (3, 1), (1, 2), (3, 2), (1, 3), (2, 3), (3, 3)];
+const NEIGHBORS_23: [(usize, usize); 5] = [(1, 2), (2, 2), (3, 2), (1, 3), (3, 3)];
+
+const NEIGHBORS_30: [(usize, usize); 3] = [(2, 0), (2, 1), (3, 1)];
+const NEIGHBORS_31: [(usize, usize); 5] = [(2, 0), (2, 1), (2, 2), (3, 0), (3, 2)];
+const NEIGHBORS_32: [(usize, usize); 5] = [(2, 1), (2, 2), (2, 3), (3, 1), (3, 3)];
+const NEIGHBORS_33: [(usize, usize); 3] = [(2, 2), (3, 2), (2, 3)];
+
+// Are these all allocated statically or at runtime? How can I tell?
+fn neighbors(x: usize, y: usize) -> &'static[(usize, usize)] {
+    match (x, y) {
+        (0, 0) => &NEIGHBORS_00,
+        (0, 1) => &NEIGHBORS_01,
+        (0, 2) => &NEIGHBORS_02,
+        (0, 3) => &NEIGHBORS_03,
+        (1, 0) => &NEIGHBORS_10,
+        (1, 1) => &NEIGHBORS_11,
+        (1, 2) => &NEIGHBORS_12,
+        (1, 3) => &NEIGHBORS_13,
+        (2, 0) => &NEIGHBORS_20,
+        (2, 1) => &NEIGHBORS_21,
+        (2, 2) => &NEIGHBORS_22,
+        (2, 3) => &NEIGHBORS_23,
+        (3, 0) => &NEIGHBORS_30,
+        (3, 1) => &NEIGHBORS_31,
+        (3, 2) => &NEIGHBORS_32,
+        (3, 3) => &NEIGHBORS_33,
+        (_, _) => panic!(),
+    }
 }
 
 impl Boggler {
-    pub fn new(dict: trie::Trie) -> Boggler {
+    pub fn new() -> Boggler {
         Boggler {
-            dict,
             bd: Default::default(),
+            runs: 0,
         }
     }
+
+    // TODO: method to bogglify & load
 
     fn set_cell(&mut self, x: usize, y: usize, i: usize) {
         self.bd[x][y] = i;
@@ -47,8 +96,45 @@ impl Boggler {
         Ok(())
     }
 
-    pub fn score(&mut self) -> u32 {
+    pub fn score(&mut self, dict: &mut trie::Trie) -> u32 {
         let mut score = 0;
+        self.runs += 1;
+        for x in 0..4 {
+            for y in 0..4 {
+                let c = self.get_cell(x, y);
+                if let Some(d) = dict.descend_mut(c) {
+                    score += self.do_dfs(x, y, 0, 0, d);
+                }
+            }
+        }
+        score
+    }
+
+    fn do_dfs(&self, x: usize, y: usize, len_in: usize, used_in: u32, t: &mut trie::Trie) -> u32 {
+        let mut score = 0u32;
+        let c = self.get_cell(x, y);
+        let i = 4 * x + y;
+        let used = used_in ^ 1 << i;
+        let len = len_in + if c == Q { 2 } else { 1 };
+
+        if t.is_word {
+            if t.mark != self.runs {
+                t.mark = self.runs;
+                score += WORD_SCORES[len];
+            }
+        }
+
+        // XXX how efficient is it to do all this with iterators?
+        for &(cx, cy) in neighbors(x, y) {
+            let idx = 4 * cx + cy;
+            if used & (1 << idx) == 0 {
+                let cc = self.bd[cx][cy];
+                if let Some(tc) = t.descend_mut(cc) {
+                    score += self.do_dfs(cx, cy, len, used, tc)
+                }
+            }
+        }
+
         score
     }
 }
@@ -103,6 +189,22 @@ pub fn bogglify_word(word: &str) -> String {
     result
 }
 
+pub fn load_dictionary(filename: &str) -> io::Result<trie::Trie> {
+    let mut t = trie::Trie::new();
+    let lines = util::read_lines(filename)?;
+    // Consumes the iterator, returns an (Optional) String
+    for line in lines {
+        if let Ok(word_line) = line {
+            let word = word_line.trim();
+            if !word.is_empty() && is_boggle_word(word) {
+                let boggle_word = bogglify_word(word);
+                t.add_word_chars(boggle_word.chars());
+            }
+        }
+    }
+    Ok(t)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -126,7 +228,7 @@ mod tests {
 
     #[test]
     fn test_parse_and_display() {
-        let mut b = Boggler::new(trie::Trie::new());
+        let mut b = Boggler::new();
         b.parse_board("abcdefghijklmnop").unwrap();
         assert_eq!("abcdefghijklmnop", b.to_string());
 

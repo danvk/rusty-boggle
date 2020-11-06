@@ -62,6 +62,40 @@ I'm a little worried about that performance while loading the Trie.
 Wow, writing functions from str -> str is complicated!
 https://stackoverflow.com/questions/29781331/why-cant-i-return-an-str-value-generated-from-a-string
 
+Array indexing has been a bit painful. To index into an array, you need a `usize`.
+But to subtract one from the x position, you need to do `x - 1`, or `x + (-1)`, which could overflow.
+This is all pretty annoying to model out!
+
+I'm confused by how hard it is to import modules in Rust.
+I have:
+src/
+  boggler.rs
+  trie.rs
+  main.rs
+
+To import trie.rs from boggler.rs, I had to do this:
+
+    #[path = "./trie.rs"]
+    mod trie;
+
+But then in `main.rs`, I get this:
+
+    mismatched types
+    expected struct `boggler::trie::Trie`, found struct `trie::Trie` rustc(E0308)
+
+As though these weren't the same. Apparently the trick is `crate`:
+
+    use crate::trie;
+
+This _only_ works if you also have `mod trie` in `main.rs`.
+
+You can't mutate parameters as you can in C or JS.
+
+The mutable Trie is making me fight with the borrow checker.
+This is a big performance win (it means you don't need a cleanup) but I can see why rust thinks it's unsafe.
+My workaround is to disentangle ownership of the Boggler & the Trie.
+I don't think this is good from a safety perspective.
+
 ## General Notes
 
 - "Classic" C++ is really drowning in type annotations.
