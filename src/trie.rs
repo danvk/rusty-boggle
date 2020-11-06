@@ -5,9 +5,16 @@ pub const NUM_LETTERS: usize = 26;
 
 pub fn idx(letter: char) -> usize {
     if letter < 'a' || letter > 'z' {
-        panic!("Invalid letter {letter}")
+        panic!("Invalid letter {}", letter)
     }
     return (letter as usize) - ('a' as usize);
+}
+
+pub fn idx_to_char(idx: usize) -> char {
+    if idx > 26 {
+        panic!("Invalid letter index {}", idx);
+    }
+    return (('a' as usize) + idx) as u8 as char;
 }
 
 pub struct Trie {
@@ -132,6 +139,23 @@ impl Trie {
     }
 }
 
+pub fn reverse_lookup(root: &Trie, node: &Trie) -> Option<String> {
+    if root as *const _ == node as *const _ {
+        return Some(String::from(""));
+    } else {
+        for i in 0..NUM_LETTERS {
+            if let Some(child) = root.descend(i) {
+                if let Some(rest) = reverse_lookup(child, node) {
+                    let mut s = String::from(idx_to_char(i));
+                    s.push_str(&rest);
+                    return Some(s);
+                }
+            }
+        }
+    }
+    return None;
+}
+
 #[cfg(test)]
 mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
@@ -189,5 +213,22 @@ mod tests {
         wd.mark = 12345;
 
         assert_eq!(t.find_word("tea").unwrap().mark, 12345);
+    }
+
+    #[test]
+    fn test_reverse_lookup() {
+        let mut t = Trie::new();
+        t.add_word("agriculture");
+        t.add_word("culture");
+        t.add_word("boggle");
+        t.add_word("tea");
+        t.add_word("sea");
+        t.add_word("teapot");
+
+        let mut wd = t.descend(idx('t')).unwrap();
+        wd = wd.descend(idx('e')).unwrap();
+        wd = wd.descend(idx('a')).unwrap();
+
+        assert_eq!(reverse_lookup(&t, wd), Some(String::from("tea")));
     }
 }

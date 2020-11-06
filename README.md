@@ -96,6 +96,12 @@ This is a big performance win (it means you don't need a cleanup) but I can see 
 My workaround is to disentangle ownership of the Boggler & the Trie.
 I don't think this is good from a safety perspective.
 
+Unclear if you're allowed to compare pointers for equality in Rust:
+https://users.rust-lang.org/t/is-any-way-to-know-references-are-referencing-the-same-object/9716/5
+This makes me wonder if choosing such a performance-sensitive application was good for a first project!
+
+`vec.iter().enumerate()` is a useful pattern: iterate over (index, value) pairs.
+
 ## General Notes
 
 - "Classic" C++ is really drowning in type annotations.
