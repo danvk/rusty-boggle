@@ -12,8 +12,8 @@ pub struct Boggler {
 }
 
 const NEIGHBORS_00: [(usize, usize); 3] = [(0, 1), (1, 0), (1, 1)];
-const NEIGHBORS_01: [(usize, usize); 5] = [(0, 0), (1, 0), (1, 1), (2, 1), (0, 2)];
-const NEIGHBORS_02: [(usize, usize); 5] = [(0, 1), (1, 1), (1, 2), (2, 2), (0, 3)];
+const NEIGHBORS_01: [(usize, usize); 5] = [(0, 0), (1, 0), (1, 1), (1, 2), (0, 2)];
+const NEIGHBORS_02: [(usize, usize); 5] = [(0, 1), (1, 1), (1, 2), (1, 3), (0, 3)];
 const NEIGHBORS_03: [(usize, usize); 3] = [(0, 2), (1, 2), (1, 3)];
 
 const NEIGHBORS_10: [(usize, usize); 5] = [(0, 0), (2, 0), (0, 1), (1, 1), (2, 1)];
@@ -103,14 +103,14 @@ impl Boggler {
             for y in 0..4 {
                 let c = self.get_cell(x, y);
                 if let Some(d) = dict.descend_mut(c) {
-                    score += self.do_dfs(x, y, 0, 0, d);
+                    score += self.do_dfs(x, y, 0, 0, d, String::from(trie::idx_to_char(c)));
                 }
             }
         }
         score
     }
 
-    fn do_dfs(&self, x: usize, y: usize, len_in: usize, used_in: u32, t: &mut trie::Trie) -> u32 {
+    fn do_dfs(&self, x: usize, y: usize, len_in: usize, used_in: u32, t: &mut trie::Trie, word_so_far: String) -> u32 {
         let mut score = 0u32;
         let c = self.get_cell(x, y);
         let i = 4 * x + y;
@@ -121,6 +121,7 @@ impl Boggler {
             if t.mark != self.runs {
                 t.mark = self.runs;
                 score += WORD_SCORES[len];
+                println!("Found {}", word_so_far);
             }
         }
 
@@ -130,7 +131,10 @@ impl Boggler {
             if used & (1 << idx) == 0 {
                 let cc = self.bd[cx][cy];
                 if let Some(tc) = t.descend_mut(cc) {
-                    score += self.do_dfs(cx, cy, len, used, tc)
+                    let mut prefix = String::with_capacity(1 + len_in);
+                    prefix.push_str(&word_so_far);
+                    prefix.push(trie::idx_to_char(cc));
+                    score += self.do_dfs(cx, cy, len, used, tc, prefix);
                 }
             }
         }
