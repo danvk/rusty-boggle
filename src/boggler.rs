@@ -146,8 +146,7 @@ impl fmt::Display for Boggler {
         let mut result = String::with_capacity(w * h);
         for y in 0..h {
             for x in 0..w {
-                let letter = ('a' as usize) + self.get_cell(x, y);
-                result.push(letter as u8 as char);
+                result.push(trie::idx_to_char(self.get_cell(x, y)));
             }
         }
         write!(f, "{}", result)
@@ -234,5 +233,15 @@ mod tests {
 
         assert!(b.parse_board("abcdefghijklmno").is_err());
         assert!(b.parse_board("abcdefghijklmnopq").is_err());
+    }
+
+    #[test]
+    fn test_set_cell() {
+        let mut b = Boggler::new();
+        b.parse_board("abcdefghijklmnop").unwrap();
+        assert_eq!("abcdefghijklmnop", b.to_string());
+        b.set_cell(1, 0, 0);
+        b.set_cell(2, 0, 0);
+        assert_eq!("aaadefghijklmnop", b.to_string());
     }
 }

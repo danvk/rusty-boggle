@@ -88,6 +88,7 @@ As though these weren't the same. Apparently the trick is `crate`:
     use crate::trie;
 
 This _only_ works if you also have `mod trie` in `main.rs`.
+This also doesn't work from a file in `bin/prog.rs`.
 
 You can't mutate parameters as you can in C or JS.
 
