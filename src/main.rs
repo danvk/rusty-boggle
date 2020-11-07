@@ -30,7 +30,7 @@ fn main() {
     let mut total_score: u32 = 0;
     let mut hash: u32 = 1234;
     let mut num_boards = 0;
-    let bases: [&str; 2] = ["abcdefghijklmonp", "catdlinemaropets"];
+    let bases: [&str; 2] = ["abcdefghijklmnop", "catdlinemaropets"];
     let start = Instant::now();
 
     for rep in 0..1 {
