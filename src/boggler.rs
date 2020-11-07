@@ -103,14 +103,14 @@ impl Boggler {
             for y in 0..4 {
                 let c = self.get_cell(x, y);
                 if let Some(d) = dict.descend_mut(c) {
-                    score += self.do_dfs(x, y, 0, 0, d);
+                    score += self.do_dfs(x, y, 0, 0, d, &String::from(trie::idx_to_char(c)));
                 }
             }
         }
         score
     }
 
-    fn do_dfs(&self, x: usize, y: usize, len_in: usize, used_in: u32, t: &mut trie::Trie) -> u32 {
+    fn do_dfs(&self, x: usize, y: usize, len_in: usize, used_in: u32, t: &mut trie::Trie, wd_so_far: &str) -> u32 {
         let mut score = 0u32;
         let c = self.get_cell(x, y);
         let i = 4 * x + y;
@@ -121,6 +121,9 @@ impl Boggler {
             if t.mark != self.runs {
                 t.mark = self.runs;
                 score += WORD_SCORES[len];
+                if len >= 3 {
+                    println!("{} {}", len, wd_so_far);
+                }
             }
         }
 
@@ -130,7 +133,9 @@ impl Boggler {
             if used & (1 << idx) == 0 {
                 let cc = self.bd[cx][cy];
                 if let Some(tc) = t.descend_mut(cc) {
-                    score += self.do_dfs(cx, cy, len, used, tc);
+                    let mut prefix = String::from(wd_so_far);
+                    prefix.push(trie::idx_to_char(cc));
+                    score += self.do_dfs(cx, cy, len, used, tc, &prefix);
                 }
             }
         }
@@ -158,12 +163,11 @@ pub fn is_boggle_word(word: &str) -> bool {
     if len < 3 || len > 17 {
         return false
     }
-    let mut last_was_q = false;
-    for c in word.chars() {
-        if last_was_q && c != 'u' {
+    let b = word.as_bytes();
+    for (i, c) in b.iter().enumerate() {
+        if *c == b'q' && b.get(i+1) != Some(&b'u') {
             return false;
         }
-        last_was_q = c == 'q';
     }
     return true;
 }
@@ -173,14 +177,14 @@ pub fn bogglify_word(word: &str) -> String {
     if !word.contains("q") {
         return String::from(word);
     }
-    let entries: Vec<char> = word.chars().collect();
+    let entries = word.chars().collect::<Vec<char>>();
     let len = entries.len();
     let mut i = 0;
     let mut result = String::with_capacity(len - 1);
     loop {
         let c = entries[i];
         result.push(c);
-        i +=  if c == 'q' { 2 } else { 1 };
+        i += if c == 'q' { 2 } else { 1 };
         if i >= len {
             break;
         }
@@ -217,12 +221,15 @@ mod tests {
         assert!(is_boggle_word("quick"));
         assert!(!is_boggle_word("qick"));
         assert!(!is_boggle_word("extremelylongwordmaybgerman"));
+        assert!(!is_boggle_word("suq"));
+        assert!(is_boggle_word("suqu"));
     }
 
     #[test]
     fn test_bogglify_word() {
         assert_eq!(bogglify_word("food"), "food");
         assert_eq!(bogglify_word("quickly"), "qickly");
+        assert_eq!(bogglify_word("suqu"), "suq");
     }
 
     #[test]

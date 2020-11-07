@@ -22,10 +22,11 @@ fn main() {
     );
 
     let mut boggler = boggler::Boggler::new();
-    // boggler.parse_board(board).unwrap();
-    // let score = boggler.score(&mut dict);
-    // println!("{}: {}", boggler, score);
+    boggler.parse_board(board).unwrap();
+    let score = boggler.score(&mut dict);
+    println!("{}: {}", boggler, score);
 
+    /*
     let prime: u32 = (1 << 20) - 3;
     let mut total_score: u32 = 0;
     let mut hash: u32 = 1234;
@@ -74,4 +75,5 @@ fn main() {
         elapsed,
         (num_boards as f32) / elapsed
     );
+    */
 }

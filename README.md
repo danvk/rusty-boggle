@@ -130,6 +130,11 @@ Some notes from reading about lifetimes and generics in the Rust book:
   - `&str` (if it's a slice or the whole input) or
   - `String` if it isn't, which forces the caller to take ownership.
 
+~A BUG! In my 13 year old C++ code, no less. It doesn't find "suqu" on the board "czzdlqzemauopezs".~
+~The web UI for this board has many bugs: <https://www.danvk.org/boggle/?board=czzdlquzemauopezs>.~
+
+The word was "suq", not "suqu". So it's not a Boggle word.
+
 ## General Notes
 
 - "Classic" C++ is really drowning in type annotations.
