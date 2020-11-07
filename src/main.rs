@@ -26,7 +26,6 @@ fn main() {
     let score = boggler.score(&mut dict);
     println!("{}: {}", boggler, score);
 
-    /*
     let prime: u32 = (1 << 20) - 3;
     let mut total_score: u32 = 0;
     let mut hash: u32 = 1234;
@@ -50,7 +49,7 @@ fn main() {
                             hash = hash % prime;
                             total_score += score;
                             num_boards += 1;
-                            println!("{}{},{}/{} {} {} -> {}", y1, y2, c1, c2, boggler, score, total_score)
+                            // println!("{}{},{}/{} {} {} -> {}", y1, y2, c1, c2, boggler, score, total_score)
                         }
                     }
                 }
@@ -66,14 +65,13 @@ fn main() {
     println!(
         "Total score: {} = {} pts/bd",
         total_score,
-        total_score / num_boards
+        (total_score as f32) / (num_boards as f32),
     );
     println!("Score hash: {:x}", hash);
     println!(
         "Evaluated {} boards in {} seconds = {} bds/sec",
         num_boards,
         elapsed,
-        (num_boards as f32) / elapsed
+        1.0 * (num_boards as f32) / elapsed
     );
-    */
 }

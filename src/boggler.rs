@@ -103,14 +103,14 @@ impl Boggler {
             for y in 0..4 {
                 let c = self.get_cell(x, y);
                 if let Some(d) = dict.descend_mut(c) {
-                    score += self.do_dfs(x, y, 0, 0, d, &String::from(trie::idx_to_char(c)));
+                    score += self.do_dfs(x, y, 0, 0, d);
                 }
             }
         }
         score
     }
 
-    fn do_dfs(&self, x: usize, y: usize, len_in: usize, used_in: u32, t: &mut trie::Trie, wd_so_far: &str) -> u32 {
+    fn do_dfs(&self, x: usize, y: usize, len_in: usize, used_in: u32, t: &mut trie::Trie) -> u32 {
         let mut score = 0u32;
         let c = self.get_cell(x, y);
         let i = 4 * x + y;
@@ -121,9 +121,6 @@ impl Boggler {
             if t.mark != self.runs {
                 t.mark = self.runs;
                 score += WORD_SCORES[len];
-                if len >= 3 {
-                    println!("{} {}", len, wd_so_far);
-                }
             }
         }
 
@@ -133,9 +130,7 @@ impl Boggler {
             if used & (1 << idx) == 0 {
                 let cc = self.bd[cx][cy];
                 if let Some(tc) = t.descend_mut(cc) {
-                    let mut prefix = String::from(wd_so_far);
-                    prefix.push(trie::idx_to_char(cc));
-                    score += self.do_dfs(cx, cy, len, used, tc, &prefix);
+                    score += self.do_dfs(cx, cy, len, used, tc);
                 }
             }
         }
