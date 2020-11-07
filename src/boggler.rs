@@ -64,18 +64,18 @@ impl Boggler {
 
     // TODO: method to bogglify & load
 
-    fn set_cell(&mut self, x: usize, y: usize, i: usize) {
+    pub fn set_cell(&mut self, x: usize, y: usize, i: usize) {
         self.bd[x][y] = i;
     }
 
-    fn get_cell(&self, x: usize, y: usize) -> usize {
+    pub fn get_cell(&self, x: usize, y: usize) -> usize {
         self.bd[x][y]
     }
 
-    fn width(&self) -> usize {
+    pub fn width(&self) -> usize {
         4
     }
-    fn height(&self) -> usize {
+    pub fn height(&self) -> usize {
         4
     }
 
@@ -103,14 +103,14 @@ impl Boggler {
             for y in 0..4 {
                 let c = self.get_cell(x, y);
                 if let Some(d) = dict.descend_mut(c) {
-                    score += self.do_dfs(x, y, 0, 0, d, String::from(trie::idx_to_char(c)));
+                    score += self.do_dfs(x, y, 0, 0, d);
                 }
             }
         }
         score
     }
 
-    fn do_dfs(&self, x: usize, y: usize, len_in: usize, used_in: u32, t: &mut trie::Trie, word_so_far: String) -> u32 {
+    fn do_dfs(&self, x: usize, y: usize, len_in: usize, used_in: u32, t: &mut trie::Trie) -> u32 {
         let mut score = 0u32;
         let c = self.get_cell(x, y);
         let i = 4 * x + y;
@@ -121,7 +121,6 @@ impl Boggler {
             if t.mark != self.runs {
                 t.mark = self.runs;
                 score += WORD_SCORES[len];
-                println!("Found {}", word_so_far);
             }
         }
 
@@ -131,10 +130,7 @@ impl Boggler {
             if used & (1 << idx) == 0 {
                 let cc = self.bd[cx][cy];
                 if let Some(tc) = t.descend_mut(cc) {
-                    let mut prefix = String::with_capacity(1 + len_in);
-                    prefix.push_str(&word_so_far);
-                    prefix.push(trie::idx_to_char(cc));
-                    score += self.do_dfs(cx, cy, len, used, tc, prefix);
+                    score += self.do_dfs(cx, cy, len, used, tc);
                 }
             }
         }

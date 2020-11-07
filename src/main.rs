@@ -2,6 +2,7 @@ mod boggler;
 mod trie;
 mod util;
 use std::env;
+use std::time::Instant;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -24,4 +25,51 @@ fn main() {
     boggler.parse_board(board).unwrap();
     let score = boggler.score(&mut dict);
     println!("{}: {}", boggler, score);
+
+    let mut prime: u32 = (1 << 20) - 3;
+    let mut total_score: u32 = 0;
+    let mut hash: u32 = 1234;
+    let mut num_boards = 0;
+    let bases: [&str; 2] = ["abcdefghijklmonp", "catdlinemaropets"];
+    let start = Instant::now();
+
+    for rep in 0..10 {
+        hash = 1234;
+        for base in bases.iter() {
+            boggler.parse_board(base).unwrap();
+            for y1 in 0..4 {
+                for y2 in 0..4 {
+                    for c1 in 0..26 {
+                        boggler.set_cell(1, y1, c1);
+                        for c2 in 0..26 {
+                            boggler.set_cell(2, y2, c2);
+                            let score = boggler.score(&mut dict);
+                            hash *= 123 + score;
+                            hash = hash % prime;
+                            total_score += score;
+                            num_boards += 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let elapsed = start.elapsed().as_secs_f32();
+    // if hash != 0x000C1D3D {
+    //     panic!("Hash mismatch, expected 0x000C1D3D but got {}", hash);
+    // }
+
+    println!(
+        "Total score: {} = {} pts/bd",
+        total_score,
+        total_score / num_boards
+    );
+    println!("Score hash: {:x}", hash);
+    println!(
+        "Evaluated {} boards in {} seconds = {} bds/sec",
+        num_boards,
+        elapsed,
+        (num_boards as f32) / elapsed
+    );
 }

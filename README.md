@@ -102,6 +102,33 @@ This makes me wonder if choosing such a performance-sensitive application was go
 
 `vec.iter().enumerate()` is a useful pattern: iterate over (index, value) pairs.
 
+First indication of performance (debug build, incorrect results):
+
+    Evaluated 216320 boards in 14.541386 seconds = 14876.161 bds/sec
+
+To do an optimized build, you run `cargo build --release`.
+
+The release build is much faster:
+
+    Evaluated 216320 boards in 2.0822232 seconds = 103888.96 bds/sec
+
+But still only ~half the speed of the C++ version:
+
+    Evaluated 216320 boards in 0.929824 seconds = 232646.209370 bds/sec
+
+Some notes from reading about lifetimes and generics in the Rust book:
+
+- In general Rust uses move semantics for complex objects and copy for primitives.
+  This is decided by whether a type implements the `Copy` trait.
+  The upshot is that there are generally no implicit and expensive operations like in C++.
+- Originally, reference parameters _always_ required lifetime annotations.
+  To streamline things, there are two special cases:
+  1. If there's only one input reference, the output reference gets its lifetime.
+  2. Output references get the lifetime of `&self`.
+- You usually want to take `&str` as a parameter and return either:
+  - `&str` (if it's a slice or the whole input) or
+  - `String` if it isn't, which forces the caller to take ownership.
+
 ## General Notes
 
 - "Classic" C++ is really drowning in type annotations.
