@@ -135,6 +135,34 @@ Some notes from reading about lifetimes and generics in the Rust book:
 
 The word was "suq", not "suqu". So it's not a Boggle word.
 
+Main questions I have now:
+
+1. Is there a more idiomatic way to write my Boggler? Main questions here:
+   1. How can I make the Boggler take ownership of the Trie?
+   2. How can I use debug methods like `reverse_lookup` w/o angering the borrow checker?
+   3. Is there a better way to do the `neighbors` iterator?
+2. Why is it slower than C++? Some ideas:
+   1. The `neighbors` iterator.
+   2. Try inlining the `HIT` macro from C++.
+   3. The `Box` wrapper in `Trie`.
+
+There is a `cargo flamegraph` command for profiling: https://github.com/flamegraph-rs/flamegraph
+... sadly it does not work on macOS because of security https://github.com/flamegraph-rs/flamegraph/issues/31
+
+Even after reading the relevant chapter in the Rust book, I'm still finding the file organization of modules baffling.
+https://www.reddit.com/r/rust/comments/6ow7q9/how_to_structure_a_multibinary_multimodule_project/
+
+This repo helped me figure it out:
+https://github.com/shepmaster/sxd-document/blob/master/src/bin/open.rs
+
+The trick was to do two things:
+
+1. Make a file `src/lib.rs` which declares all the other lib files with `pub mod`.
+2. Import from files in `bin/` via `use rusty_boggle::boggler`;
+   This wasn't necessary in `main.rs`, but seems to be necessary in `bin/prog.rs`.
+
+This is all pretty confusing.
+
 ## General Notes
 
 - "Classic" C++ is really drowning in type annotations.

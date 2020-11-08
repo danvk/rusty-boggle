@@ -1,4 +1,4 @@
-use crate::util;
+use super::util;
 use std::io;
 
 pub const NUM_LETTERS: usize = 26;

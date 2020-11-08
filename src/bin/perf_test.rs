@@ -1,17 +1,15 @@
-mod boggler;
-mod trie;
-mod util;
 use std::env;
 use std::time::Instant;
 
+use rusty_boggle::boggler;
+
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 3 {
+    if args.len() != 2 {
         panic!("Expected two arguments, got {}: {:?}", args.len(), args);
     }
 
     let dict_path = args.get(1).unwrap();
-    let board = args.get(2).unwrap();
     let mut dict = boggler::load_dictionary(dict_path).unwrap();
 
     println!(
@@ -22,9 +20,6 @@ fn main() {
     );
 
     let mut boggler = boggler::Boggler::new();
-    boggler.parse_board(board).unwrap();
-    let score = boggler.score(&mut dict);
-    println!("{}: {}", boggler, score);
 
     let prime: u32 = (1 << 20) - 3;
     let mut total_score: u32 = 0;
@@ -33,7 +28,7 @@ fn main() {
     let bases: [&str; 2] = ["abcdefghijklmnop", "catdlinemaropets"];
     let start = Instant::now();
 
-    for rep in 0..1 {
+    for _rep in 0..10 {
         hash = 1234;
         for base in bases.iter() {
             boggler.parse_board(base).unwrap();

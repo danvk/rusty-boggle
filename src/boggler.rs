@@ -1,5 +1,5 @@
-use crate::util;
-use crate::trie;
+use super::util;
+use super::trie;
 use std::io;
 use std::fmt;
 
