@@ -111,7 +111,13 @@ To do an optimized build, you run `cargo build --release`.
 
 The release build is much faster:
 
-    Evaluated 216320 boards in 2.0822232 seconds = 103888.96 bds/sec
+    ~Evaluated 216320 boards in 2.0822232 seconds = 103888.96 bds/sec~
+    Evaluated 216320 boards in 1.6475447 seconds = 131298.4 bds/sec
+
+I'd left a debug line in the performance test. I'm pretty surprised this made a 20k bds/sec
+difference; it looks like it should be much cheaper than scoring a board:
+
+    boggler.parse_board(&boggler.to_string()).unwrap();
 
 But still only ~half the speed of the C++ version:
 
@@ -145,6 +151,10 @@ Main questions I have now:
    1. The `neighbors` iterator.
    2. Try inlining the `HIT` macro from C++.
    3. The `Box` wrapper in `Trie`.
+      --> Inverting this is actually much slower! (See commit 29c0acd)
+      -children: [Box<Option<Trie>>; NUM_LETTERS],
+      +children: Box<[Option<Trie>; NUM_LETTERS]>,
+      Evaluated 216320 boards in 2.1912093 seconds = 98721.74 bds/sec
 
 There is a `cargo flamegraph` command for profiling: https://github.com/flamegraph-rs/flamegraph
 ... sadly it does not work on macOS because of security https://github.com/flamegraph-rs/flamegraph/issues/31
